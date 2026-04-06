@@ -9,6 +9,8 @@ Current scope:
 - split payload export
 - suffix replay from payload
 - benchmarking for `p3 / p4 / p5`
+- phase-1 `split x codec` benchmark scripts
+- per-device winner-map experiment tooling
 
 This is a research and benchmarking repo, not a production inference service.
 
@@ -22,8 +24,8 @@ Completed:
 - local compute profiling for `p3 / p4 / p5`
 
 Next:
-- migrate `fp16 / int8` codec baselines to Jetson
-- build `split x codec` local roundtrip benchmarks
+- collect phase-1 outputs across multiple device profiles
+- build per-device winner maps and Pareto frontiers
 
 ## Split definition
 
@@ -81,6 +83,23 @@ python scripts/benchmark_split_suffix_jetson_v2.py \
   --device cuda:0
 ```
 
+Per-device phase-1 suite:
+
+```bash
+python scripts/run_device_phase1_suite.py \
+  --device-name orin_nx_15w \
+  --device-label "Jetson Orin NX 15W" \
+  --device cuda:0
+```
+
+Per-device winner map:
+
+```bash
+python scripts/build_device_winner_map.py \
+  --device-root /home/nvidia/jetson_split/outputs/device_profiles \
+  --output-dir /home/nvidia/jetson_split/outputs/device_profiles/_analysis
+```
+
 ## Current findings
 
 At `512 x 640`:
@@ -94,4 +113,5 @@ At `512 x 640`:
 - `SETUP.md`
 - `USAGE.md`
 - `RESULTS.md`
+- `summary_md/device_winner_map_experiment_plan.md`
 - `summary_md/jetson_split_handoff_summary.md`
