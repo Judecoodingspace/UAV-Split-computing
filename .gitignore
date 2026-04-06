@@ -13,6 +13,7 @@ env/
 data/
 outputs/
 weights/
+review_drafts/
 
 *.pt
 *.pth
