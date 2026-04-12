@@ -11,6 +11,7 @@ Current scope:
 - benchmarking for `p3 / p4 / p5`
 - phase-1 `split x codec` benchmark scripts
 - per-device winner-map experiment tooling
+- phase-2 execution-mode experiment tooling for `full_local / split / full_offload / small-model local`
 
 This is a research and benchmarking repo, not a production inference service.
 
@@ -24,8 +25,8 @@ Completed:
 - local compute profiling for `p3 / p4 / p5`
 
 Next:
-- collect phase-1 outputs across multiple device profiles
-- build per-device winner maps and Pareto frontiers
+- collect real double-machine phase-2 outputs across device and network profiles
+- compare execution modes under heterogeneous compute and network conditions
 
 ## Split definition
 
@@ -100,6 +101,48 @@ python scripts/build_device_winner_map.py \
   --output-dir /home/nvidia/jetson_split/outputs/device_profiles/_analysis
 ```
 
+Phase-2 receiver:
+
+```bash
+python scripts/phase2_receiver.py \
+  --host 0.0.0.0 \
+  --port 47001 \
+  --device cuda:0
+```
+
+Phase-2 local sender suite:
+
+```bash
+python scripts/run_phase2_execution_suite.py \
+  --sender-device-id orin_nx_15w \
+  --sender-backend cuda:0 \
+  --network-profile none \
+  --actions A0 A4 A5 \
+  --output-dir /home/nvidia/jetson_split/outputs/phase2_execution/orin_nx_15w/none
+```
+
+Phase-2 remote sender suite:
+
+```bash
+python scripts/run_phase2_execution_suite.py \
+  --sender-device-id orin_nx_15w \
+  --sender-backend cuda:0 \
+  --network-profile good \
+  --receiver-device-id orin_nx_maxn_remote \
+  --remote-host <REMOTE_IP> \
+  --actions A1 A2 A3 \
+  --output-dir /home/nvidia/jetson_split/outputs/phase2_execution/orin_nx_15w/good \
+  --reference-detail-csv /home/nvidia/jetson_split/outputs/phase2_execution/orin_nx_15w/none/phase2_detail.csv
+```
+
+Phase-2 report build:
+
+```bash
+python scripts/build_phase2_execution_report.py \
+  --suite-root /home/nvidia/jetson_split/outputs/phase2_execution \
+  --output-dir /home/nvidia/jetson_split/outputs/phase2_execution/_analysis
+```
+
 ## Current findings
 
 At `512 x 640`:
@@ -114,4 +157,5 @@ At `512 x 640`:
 - `USAGE.md`
 - `RESULTS.md`
 - `summary_md/device_winner_map_experiment_plan.md`
+- `summary_md/phase2_execution_mode_runbook.md`
 - `summary_md/jetson_split_handoff_summary.md`

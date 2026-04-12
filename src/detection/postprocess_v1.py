@@ -37,6 +37,18 @@ class DetectionSet:
     def to_json(self) -> str:
         return json.dumps(self.to_dict(), ensure_ascii=False)
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "DetectionSet":
+        return cls(
+            boxes_xyxy=torch.as_tensor(data.get("boxes_xyxy", []), dtype=torch.float32).reshape(-1, 4),
+            scores=torch.as_tensor(data.get("scores", []), dtype=torch.float32).reshape(-1),
+            classes=torch.as_tensor(data.get("classes", []), dtype=torch.int64).reshape(-1),
+        )
+
+    @classmethod
+    def from_json(cls, text: str) -> "DetectionSet":
+        return cls.from_dict(json.loads(text))
+
 
 def extract_prediction_tensor(raw_output: Any) -> torch.Tensor:
     if torch.is_tensor(raw_output):
