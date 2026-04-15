@@ -1,0 +1,16 @@
+{
+  "profile_id": "orin_nx_maxn",
+  "description": "Jetson Orin NX Super sender running in MAXN_SUPER mode.",
+  "expected_sender_backend": "cuda:0",
+  "theoretical_dense_int8_tops": 58.0,
+  "fp16_tflops_approx": 19.0,
+  "notes": "This profile maps the experiment label 'orin_nx_maxn' to the local board's MAXN_SUPER nvpmodel mode.",
+  "jetson": {
+    "nvpmodel_mode_id": 0,
+    "nvpmodel_mode_name": "MAXN_SUPER",
+    "min_online_cpu_count": 8,
+    "gpu_max_freq_hz": 1173000000,
+    "dla_core_max_freq_hz": 1228800000,
+    "apply_jetson_clocks": false
+  }
+}

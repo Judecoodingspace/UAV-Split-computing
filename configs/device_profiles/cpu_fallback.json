@@ -1,0 +1,6 @@
+{
+  "profile_id": "cpu_fallback",
+  "description": "Sender runs the local path on CPU instead of CUDA.",
+  "expected_sender_backend": "cpu",
+  "notes": "This profile only validates the selected backend. It does not impose an nvpmodel requirement."
+}

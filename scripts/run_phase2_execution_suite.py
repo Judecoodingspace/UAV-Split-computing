@@ -46,6 +46,13 @@ from phase2_execution import (
     send_framed_bytes,
     encode_jpeg_image,
 )
+from phase2_execution.device_profiles import (
+    DEFAULT_DEVICE_PROFILE_DIR,
+    collect_local_device_snapshot,
+    load_device_profile,
+    profile_to_manifest_dict,
+    validate_snapshot_against_profile,
+)
 
 
 STRICT_THRESHOLD = 0.999
@@ -652,6 +659,23 @@ def build_argparser() -> argparse.ArgumentParser:
     parser.add_argument("--sender-device-id", type=str, required=True, help="Stable sender device profile id.")
     parser.add_argument("--sender-backend", type=str, required=True, help="Sender backend, e.g. cuda:0 or cpu.")
     parser.add_argument(
+        "--sender-device-profile",
+        type=str,
+        default="",
+        help="Optional device profile name used for sender preflight validation and manifest metadata.",
+    )
+    parser.add_argument(
+        "--device-profiles-dir",
+        type=Path,
+        default=DEFAULT_DEVICE_PROFILE_DIR,
+        help="Directory containing sender device profile JSON files.",
+    )
+    parser.add_argument(
+        "--allow-device-profile-mismatch",
+        action="store_true",
+        help="Continue even if the current sender device state does not match --sender-device-profile.",
+    )
+    parser.add_argument(
         "--network-profile",
         type=str,
         required=True,
@@ -735,6 +759,30 @@ def main() -> None:
         images = images[: args.max_images]
     if not images:
         raise RuntimeError(f"No images found under {image_dir}")
+
+    sender_profile = None
+    sender_snapshot: Dict[str, Any] = {}
+    sender_profile_check: Dict[str, Any] = {}
+    if args.sender_device_profile:
+        sender_profile = load_device_profile(args.sender_device_profile, args.device_profiles_dir)
+        sender_snapshot = collect_local_device_snapshot()
+        sender_profile_mismatches = validate_snapshot_against_profile(
+            sender_snapshot,
+            sender_profile,
+            sender_backend=args.sender_backend,
+        )
+        sender_profile_check = {
+            "requested_profile": args.sender_device_profile,
+            "matched": not sender_profile_mismatches,
+            "mismatches": sender_profile_mismatches,
+        }
+        if sender_profile_mismatches and not args.allow_device_profile_mismatch:
+            mismatch_text = "\n".join(f"  - {item}" for item in sender_profile_mismatches)
+            raise RuntimeError(
+                "Sender device profile check failed for "
+                f"{args.sender_device_profile}:\n{mismatch_text}\n"
+                "Use --allow-device-profile-mismatch to continue anyway."
+            )
 
     detail_rows: List[Dict[str, Any]] = []
 
@@ -906,6 +954,10 @@ def main() -> None:
         {
             "sender_device_id": args.sender_device_id,
             "sender_backend": args.sender_backend,
+            "sender_device_profile": args.sender_device_profile,
+            "sender_device_profile_metadata": profile_to_manifest_dict(sender_profile),
+            "sender_device_profile_check": sender_profile_check,
+            "sender_device_snapshot": sender_snapshot,
             "network_profile": network_profile,
             "receiver_device_id": args.receiver_device_id,
             "remote_host": args.remote_host,
@@ -928,6 +980,9 @@ def main() -> None:
 
     print("=" * 80)
     print(f"sender_device_id:  {args.sender_device_id}")
+    if args.sender_device_profile:
+        profile_status = "matched" if sender_profile_check.get("matched") else "mismatch"
+        print(f"sender_profile:    {args.sender_device_profile} ({profile_status})")
     print(f"network_profile:   {network_profile}")
     print(f"actions:           {actions}")
     print(f"n_images:          {len(images)}")

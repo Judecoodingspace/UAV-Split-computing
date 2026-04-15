@@ -1,0 +1,17 @@
+{
+  "profile_id": "orin_nx_10w",
+  "description": "Jetson Orin NX Super sender running in 10W nvpmodel mode.",
+  "expected_sender_backend": "cuda:0",
+  "theoretical_dense_int8_tops": 20.0,
+  "fp16_tflops_approx": 10.0,
+  "notes": "Approximate ceilings based on local nvpmodel caps. GPU stays at 612 MHz, while DLA and EMC are reduced versus 15W.",
+  "jetson": {
+    "nvpmodel_mode_id": 1,
+    "nvpmodel_mode_name": "10W",
+    "min_online_cpu_count": 6,
+    "gpu_max_freq_hz": 612000000,
+    "dla_core_max_freq_hz": 153600000,
+    "emc_max_freq_hz": 2133000000,
+    "apply_jetson_clocks": false
+  }
+}

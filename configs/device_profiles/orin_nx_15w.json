@@ -1,0 +1,17 @@
+{
+  "profile_id": "orin_nx_15w",
+  "description": "Jetson Orin NX Super sender running in 15W nvpmodel mode.",
+  "expected_sender_backend": "cuda:0",
+  "theoretical_dense_int8_tops": 30.0,
+  "fp16_tflops_approx": 10.0,
+  "notes": "Approximate compute ceilings for the current board configuration. Use for experiment reproducibility, not as a measured runtime throughput value.",
+  "jetson": {
+    "nvpmodel_mode_id": 2,
+    "nvpmodel_mode_name": "15W",
+    "min_online_cpu_count": 6,
+    "gpu_max_freq_hz": 612000000,
+    "dla_core_max_freq_hz": 614400000,
+    "emc_max_freq_hz": 3199000000,
+    "apply_jetson_clocks": false
+  }
+}

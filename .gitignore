@@ -12,6 +12,7 @@ env/
 
 data/
 outputs/
+runs/
 weights/
 review_drafts/
 

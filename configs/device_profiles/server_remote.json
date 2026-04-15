@@ -1,0 +1,6 @@
+{
+  "profile_id": "server_remote",
+  "description": "Remote edge server profile placeholder.",
+  "expected_sender_backend": "",
+  "notes": "Used as metadata for the remote receiver. No local Jetson constraints are enforced on the sender."
+}

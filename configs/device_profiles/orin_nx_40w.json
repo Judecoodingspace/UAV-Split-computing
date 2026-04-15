@@ -1,0 +1,16 @@
+{
+  "profile_id": "orin_nx_40w",
+  "description": "Jetson Orin NX Super sender running in 40W nvpmodel mode.",
+  "expected_sender_backend": "cuda:0",
+  "theoretical_dense_int8_tops": 58.0,
+  "fp16_tflops_approx": 19.0,
+  "notes": "High-performance capped mode with 40W power envelope and the same peak clocks as the local MAXN_SUPER profile for GPU/DLA.",
+  "jetson": {
+    "nvpmodel_mode_id": 4,
+    "nvpmodel_mode_name": "40W",
+    "min_online_cpu_count": 8,
+    "gpu_max_freq_hz": 1173000000,
+    "dla_core_max_freq_hz": 1228800000,
+    "apply_jetson_clocks": false
+  }
+}
