@@ -222,6 +222,86 @@ python scripts/build_phase2_execution_report.py \
   --output-dir outputs/phase2_execution/_analysis
 ```
 
+## Server-side fine-tune
+
+If you want to adapt `yolov8n.pt` to UAV imagery, prefer training on a server GPU rather than on the Jetson.
+
+Why a server GPU is recommended:
+- training is much heavier than inference, especially with `imgsz=960+`
+- GPU memory is usually much larger and more stable than on-device training
+- long training jobs are less likely to interfere with Jetson-side phase-2 experiments
+- the Jetson is better kept for device-mode and end-to-end execution studies
+
+Recommended dataset layout:
+
+```text
+data/uav_ft_v1/
+├── images/
+│   ├── train/
+│   ├── val/
+│   └── test/
+├── labels/
+│   ├── train/
+│   ├── val/
+│   └── test/
+└── data.yaml
+```
+
+Example `data.yaml`:
+
+```yaml
+path: /path/to/UAV-Split-computing/data/uav_ft_v1
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: car
+  1: person
+```
+
+Recommended image counts for `train / val / test`:
+- minimum usable split: `200-300` total images, roughly `140-210 / 30-45 / 30-45`
+- more reliable split: `500` total images, roughly `350 / 75 / 75`
+- stronger research split: `1000+` total images, roughly `700 / 150 / 150`
+
+Split rules:
+- split by scene / flight segment, not by adjacent frames
+- keep the same class mapping across training and evaluation
+- if you fine-tune on `car/person`, the resulting model uses `0=car, 1=person`
+
+Recommended first fine-tune target:
+- start with `weights/yolov8n.pt`
+- keep the `YOLOv8n` architecture first for best compatibility with the current split executor and `A1/A2` path
+
+Training command template:
+
+```bash
+source ~/venvs/jetson-split/bin/activate
+export PYTHONPATH="$PWD/src:$PYTHONPATH"
+
+yolo detect train \
+  model=weights/yolov8n.pt \
+  data=data/uav_ft_v1/data.yaml \
+  imgsz=960 \
+  epochs=150 \
+  batch=16 \
+  device=0 \
+  workers=8 \
+  patience=30 \
+  project=runs/detect \
+  name=uav_yolov8n_ft_960
+```
+
+After training:
+- best checkpoint: `runs/detect/uav_yolov8n_ft_960/weights/best.pt`
+- last checkpoint: `runs/detect/uav_yolov8n_ft_960/weights/last.pt`
+- copy `best.pt` back to the Jetson, for example as `weights/yolov8n_uav_ft.pt`
+- use the new weight in phase-2 with `--weights-y8n weights/yolov8n_uav_ft.pt`
+
+Evaluation note:
+- after a two-class fine-tune, use `pred_class_id=0` when evaluating `car`
+- the old COCO-pretrained default `pred_class_id=2` no longer applies
+
 ## Current findings
 
 ### Phase-1
